@@ -1,0 +1,87 @@
+<form hx-post="/config" hx-swap="outerHTML">
+  <div class="grid grid-cols-7 gap-1">
+    <label class="font-bold">Flip left foot </label>
+
+    <label for="left_foot_flip_x" class="text-right font-bold">X</label>
+    <input
+      type="hidden"
+      name="left_foot_flip_x"
+      value="{{ 1 if data.left_foot_flip_x != -1 else -1 }}"
+    />
+    <input
+      type="checkbox"
+      id="left_foot_flip_x"
+      onchange="this.previousElementSibling.value = this.checked ? -1 : 1;"
+      {% if data.left_foot_flip_x==-1 %}checked{% endif %}
+    />
+
+    <label for="left_foot_flip_y" class="text-right font-bold">Y</label>
+    <input
+      type="hidden"
+      name="left_foot_flip_y"
+      value="{{ 1 if data.left_foot_flip_y != -1 else -1 }}"
+    />
+    <input
+      type="checkbox"
+      id="left_foot_flip_y"
+      onchange="this.previousElementSibling.value = this.checked ? -1 : 1;"
+      {% if data.left_foot_flip_y==-1 %}checked{% endif %}
+    />
+
+    <label for="left_foot_flip_z" class="text-right font-bold">Z</label>
+    <input
+      type="hidden"
+      name="left_foot_flip_z"
+      value="{{ 1 if data.left_foot_flip_z != -1 else -1 }}"
+    />
+    <input
+      type="checkbox"
+      id="left_foot_flip_z"
+      onchange="this.previousElementSibling.value = this.checked ? -1 : 1;"
+      {% if data.left_foot_flip_z==-1 %}checked{% endif %}
+    />
+  </div>
+  <div class="grid grid-cols-7 gap-1">
+    <label class="font-bold">Flip right foot </label>
+
+    <label for="right_foot_flip_x" class="text-right font-bold">X</label>
+    <input
+      type="hidden"
+      name="right_foot_flip_x"
+      value="{{ 1 if data.right_foot_flip_x != -1 else -1 }}"
+    />
+    <input
+      type="checkbox"
+      id="right_foot_flip_x"
+      onchange="this.previousElementSibling.value = this.checked ? -1 : 1;"
+      {% if data.right_foot_flip_x==-1 %}checked{% endif %}
+    />
+
+    <label for="right_foot_flip_y" class="text-right font-bold">Y</label>
+    <input
+      type="hidden"
+      name="right_foot_flip_y"
+      value="{{ 1 if data.right_foot_flip_y != -1 else -1 }}"
+    />
+    <input
+      type="checkbox"
+      id="right_foot_flip_y"
+      onchange="this.previousElementSibling.value = this.checked ? -1 : 1;"
+      {% if data.right_foot_flip_y==-1 %}checked{% endif %}
+    />
+
+    <label for="right_foot_flip_z" class="text-right font-bold">Z</label>
+    <input
+      type="hidden"
+      name="right_foot_flip_z"
+      value="{{ 1 if data.right_foot_flip_z != -1 else -1 }}"
+    />
+    <input
+      type="checkbox"
+      id="right_foot_flip_z"
+      onchange="this.previousElementSibling.value = this.checked ? -1 : 1;"
+      {% if data.right_foot_flip_z==-1 %}checked{% endif %}
+    />
+  </div>
+  <button type="submit">Submit</button>
+</form>
