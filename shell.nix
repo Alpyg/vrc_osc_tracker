@@ -2,15 +2,16 @@
 with pkgs;
   mkShell {
     buildInputs = [
+      pkg-config
       python312Packages.python
       python312Packages.venvShellHook
-      python312Packages.mediapipe
       (python312Packages.opencv4.override {
         enableGtk2 = true;
       })
       python312Packages.numpy
 
       libGL
+      gtk2
       libglvnd
       cmake
     ];
