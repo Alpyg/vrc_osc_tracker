@@ -1,0 +1,6 @@
+cameras: [0]
+frames: 10
+checkerboard_box_size: 2.75
+checkerboard_rows: 5
+checkerboard_columns: 8
+cooldown: 50

@@ -1,72 +1,70 @@
-import time
-import cv2
-import numpy as np
-import mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
-from utils import draw_landmarks_on_image
-from osc import handle_osc
+import argparse
+
+import track
+import calibration
 
 
-model_path = "./models/pose_landmarker_heavy.task"
-
-BaseOptions = mp.tasks.BaseOptions
-PoseLandmarker = mp.tasks.vision.PoseLandmarker
-PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
-PoseLandmarkerResult = mp.tasks.vision.PoseLandmarkerResult
-VisionRunningMode = mp.tasks.vision.RunningMode
-
-world_landmarks = None
+def get_intrinsic_parameters():
+    print("Obtaining intrinsic parameters for each camera and saving them.")
 
 
-def result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
-    global world_landmarks
-
-    world_landmarks = result.pose_world_landmarks
-
-    annotated_image = draw_landmarks_on_image(output_image.numpy_view(), result)
-
-    cv2.imshow("VRC OSC Tracker", annotated_image)
-
-    handle_osc(result)
+def get_extrinsic_parameters():
+    print("Obtaining extrinsic parameters and saving them.")
 
 
-options = PoseLandmarkerOptions(
-    base_options=BaseOptions(
-        model_asset_path=model_path, delegate=BaseOptions.Delegate.GPU
-    ),
-    running_mode=VisionRunningMode.LIVE_STREAM,
-    output_segmentation_masks=False,
-    min_pose_detection_confidence=0.5,
-    min_pose_presence_confidence=0.5,
-    min_tracking_confidence=0.5,
-    num_poses=1,
-    result_callback=result,
-)
+def get_transformation():
+    print("Obtaining rotation and translation for each camera.")
 
 
-def start_tracking():
-    cap = cv2.VideoCapture(0)
+def main():
+    parser = argparse.ArgumentParser(
+        description="VRChat OSC Tracker. Run with no arguments to start the tracking."
+    )
+    group = parser.add_mutually_exclusive_group(required=False)
 
-    if not cap.isOpened():
-        print("Failed to open capture device")
-        exit(1)
+    group.add_argument(
+        "--frames",
+        action="store_true",
+        help="Take frames with both cameras and save them.",
+    )
+    group.add_argument(
+        "--intrinsic",
+        action="store_true",
+        help="Obtain intrinsic parameters for each camera and save them.",
+    )
+    group.add_argument(
+        "--extrinsic",
+        action="store_true",
+        help="Obtain extrinsic parameters.",
+    )
+    group.add_argument(
+        "--transform",
+        action="store_true",
+        help="Obtain rotation and translation for each camera.",
+    )
 
-    start = time.time_ns()
-    with PoseLandmarker.create_from_options(options) as landmarker:
-        while cap.isOpened():
-            ret, frame_data = cap.read()
+    parser.add_argument(
+        "--config",
+        action="store_true",
+        help="Config file to load.",
+        default="calibration_settings.yaml",
+    )
 
-            if not ret:
-                break
+    args = parser.parse_args()
 
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_data)
-            landmarker.detect_async(mp_image, time.time_ns() - start)
+    calibration.parse_settings(args.config)
 
-            if cv2.waitKey(10) & 0xFF == 27:
-                break
+    if args.frames:
+        calibration.frames()
+    elif args.intrinsic:
+        get_intrinsic_parameters()
+    elif args.extrinsic:
+        get_extrinsic_parameters()
+    elif args.transform:
+        get_transformation()
+    else:
+        track.start()
 
-    cap.release()
 
-
-start_tracking()
+if __name__ == "__main__":
+    main()
