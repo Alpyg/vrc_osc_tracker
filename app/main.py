@@ -4,18 +4,6 @@ import track
 import calibration
 
 
-def get_intrinsic_parameters():
-    print("Obtaining intrinsic parameters for each camera and saving them.")
-
-
-def get_extrinsic_parameters():
-    print("Obtaining extrinsic parameters and saving them.")
-
-
-def get_transformation():
-    print("Obtaining rotation and translation for each camera.")
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="VRChat OSC Tracker. Run with no arguments to start the tracking."
@@ -30,17 +18,12 @@ def main():
     group.add_argument(
         "--intrinsic",
         action="store_true",
-        help="Obtain intrinsic parameters for each camera and save them.",
+        help="Obtain and save intrinsic parameters for each camera.",
     )
     group.add_argument(
-        "--extrinsic",
+        "--stereo",
         action="store_true",
-        help="Obtain extrinsic parameters.",
-    )
-    group.add_argument(
-        "--transform",
-        action="store_true",
-        help="Obtain rotation and translation for each camera.",
+        help="Stereo calibrate and save the extrinsic parameters for each camera.",
     )
 
     parser.add_argument(
@@ -57,11 +40,9 @@ def main():
     if args.frames:
         calibration.frames()
     elif args.intrinsic:
-        get_intrinsic_parameters()
-    elif args.extrinsic:
-        get_extrinsic_parameters()
-    elif args.transform:
-        get_transformation()
+        calibration.intrinsic()
+    elif args.stereo:
+        calibration.stereo_calibrate()
     else:
         track.start()
 
