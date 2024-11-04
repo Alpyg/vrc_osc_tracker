@@ -113,9 +113,9 @@ class Tracker:
         osc_client.send_message(
             f"/tracking/trackers/{self.namespace}/position",
             [
-                -(self.x + self.offset[0]) * self.scale[0],
-                (self.y + self.offset[1]) * self.scale[1],
-                -(self.z + self.offset[2]) * self.scale[2],
+                (self.x + self.offset[0]) * self.scale[0],
+                -(self.y + self.offset[1]) * self.scale[1],
+                (self.z + self.offset[2]) * self.scale[2],
             ],
         )
 

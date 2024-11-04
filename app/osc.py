@@ -7,15 +7,15 @@ from pythonosc import udp_client
 from tracker import Tracker
 
 
-osc_ip = "127.0.0.1"
+osc_ip = "10.147.20.18"
 osc_port = 9000
 osc = udp_client.SimpleUDPClient(osc_ip, osc_port)
 
 trackers = {
-    "head": Tracker(namespace="head", offset=(0, 1.2, -0.2), scale=(1, 0, 1)),
-    "hip": Tracker(namespace="1", offset=(0, 0.6, 0), scale=(1, 1.5, 1)),
-    "left_foot": Tracker(namespace="2", offset=(-0.2, 0, 0), scale=(1, 1.5, 1)),
-    "right_foot": Tracker(namespace="3", offset=(0.2, 0, 0), scale=(1, 1.5, 1)),
+    "head": Tracker(namespace="head", offset=(0, 1.73, -0.2), scale=(1, 0, 1)),
+    "hip": Tracker(namespace="1", offset=(0, 0.6, 0), scale=(1, 1, 1)),
+    "left_foot": Tracker(namespace="2", offset=(-0.05, 0.3, 0.15), scale=(1, 1.5, 3)),
+    "right_foot": Tracker(namespace="3", offset=(0.05, 0.3, 0.15), scale=(1, 1.5, 3)),
 }
 
 
