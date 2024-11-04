@@ -10,7 +10,7 @@ from utils import draw_landmarks_on_image
 from osc import handle_osc
 
 
-model_path = "./models/pose_landmarker_heavy.task"
+model_path = "./models/pose_landmarker_lite.task"
 
 BaseOptions = mp.tasks.BaseOptions
 PoseLandmarker = mp.tasks.vision.PoseLandmarker
