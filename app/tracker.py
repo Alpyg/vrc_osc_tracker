@@ -55,7 +55,7 @@ class Tracker:
             base_alpha (float): The base alpha value for lerping.
             distance_threshold (float): The distance threshold to adjust alpha.
         """
-        if landmark.visibility < 0.5:
+        if landmark.visibility < 0.5 or landmark.presence < 0.5:
             return
 
         alpha = self.adaptive_alpha(landmark, base_alpha, distance_threshold)
