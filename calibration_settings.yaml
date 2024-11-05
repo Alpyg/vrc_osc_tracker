@@ -1,6 +1,7 @@
-cameras: [0]
+cameras: [0, 2]
 frames: 10
 checkerboard_box_size: 3.02
 checkerboard_rows: 5
 checkerboard_columns: 8
-cooldown: 3
+cooldown: 10
+frames: 10

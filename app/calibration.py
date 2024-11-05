@@ -28,8 +28,6 @@ def frames():
     start = False
     saved_count = 0
 
-    caps = [cv.VideoCapture(cam_id) for cam_id in cam_ids]
-
     while True:
         frames = []
         for cap in caps:
@@ -40,11 +38,21 @@ def frames():
                 print("Failed to capture from one or more cameras.")
                 quit()
 
-        preview = np.copy(frames[0])
+        prev1 = np.copy(frames[0])
+        prev2 = np.copy(frames[1])
 
         if not start:
             cv.putText(
-                preview,
+                prev1,
+                "Press SPACEBAR to start collection frames",
+                (10, 30),
+                cv.FONT_HERSHEY_DUPLEX,
+                0.8,
+                (0, 0, 255),
+                1,
+            )
+            cv.putText(
+                prev2,
                 "Press SPACEBAR to start collection frames",
                 (10, 30),
                 cv.FONT_HERSHEY_DUPLEX,
@@ -56,7 +64,7 @@ def frames():
         if start:
             cooldown -= 1
             cv.putText(
-                preview,
+                prev1,
                 f"Cooldown: {cooldown}",
                 (25, 25),
                 cv.FONT_HERSHEY_DUPLEX,
@@ -65,7 +73,25 @@ def frames():
                 1,
             )
             cv.putText(
-                preview,
+                prev1,
+                f"Frame: {saved_count}",
+                (25, 50),
+                cv.FONT_HERSHEY_DUPLEX,
+                1,
+                (0, 255, 0),
+                1,
+            )
+            cv.putText(
+                prev2,
+                f"Cooldown: {cooldown}",
+                (25, 25),
+                cv.FONT_HERSHEY_DUPLEX,
+                1,
+                (0, 255, 0),
+                1,
+            )
+            cv.putText(
+                prev2,
                 f"Frame: {saved_count}",
                 (25, 50),
                 cv.FONT_HERSHEY_DUPLEX,
@@ -81,7 +107,8 @@ def frames():
                     saved_count += 1
                     cooldown = cooldown_time * 10
 
-        cv.imshow("Preview", preview)
+        cv.imshow("Preview1", prev1)
+        cv.imshow("Preview2", prev2)
 
         k = cv.waitKey(1)
         match k:
@@ -95,9 +122,14 @@ def frames():
 
 def intrinsic():
     cam_ids = settings["cameras"]
-    frames = [glob.glob(f"frames/cam{cam_id}*") for cam_id in cam_ids]
+    frame_count = settings["frames"]
+    cooldown_time = settings["cooldown"]
 
-    images = [[cv.imread(imname, 1) for imname in cam_frames] for cam_frames in frames]
+    cooldown = cooldown_time * 10
+    start = False
+    saved_count = 0
+
+    caps = [cv.VideoCapture(cam_id) for cam_id in cam_ids]
 
     criteria = (cv.TERM_CRITERIA_EPS + cv.TermCriteria_MAX_ITER, 100, 0.001)
 
@@ -109,48 +141,77 @@ def intrinsic():
     objp[:, :2] = np.mgrid[0:rows, 0:cols].T.reshape(-1, 2)
     objp = world_scaling * objp
 
-    width = images[0][0].shape[1]
-    height = images[0][0].shape[0]
+    width = 0
+    height = 0
 
-    for cam_id, cam_images in enumerate(images):
-        imgpoints = []
-        objpoints = []
-        for j, frame in enumerate(cam_images):
-            gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    cam_imagepoints = []
+    cam_objpoints = []
+    while save_count < settings["frames"]:
+        frames = []
+        for cap in caps:
+            ret, frame = cap.read()
+            if ret:
+                frames.append(frame)
+            else:
+                print("Failed to capture from one or more cameras.")
+                quit()
 
-            print(f"cam{i}_{j}.png")
-            ret, corners = cv.findChessboardCorners(gray, (rows, cols), None)
+        prev = []
+        prevs = []
+        for frame in frames:
+            prevs.append(np.copy(frame))
 
-            if ret == True:
+        if not start:
+            prev = np.hstack((prev[0], prev[1]))
+            width = frames[0].shape[1]
+            height = frames[0].shape[0]
+            cv.putText(
+                prev,
+                "Press SPACEBAR to start collection frames",
+                (10, 30),
+                cv.FONT_HERSHEY_DUPLEX,
+                0.8,
+                (0, 0, 255),
+                1,
+            )
+
+        else if start:
+            cooldown -= 1
+
+            grays = []
+            for frame in frames:
+                grays.append(cv.cvtColor(frame, cv.COLOR_BGR2GRAY))
+
+            rets = []
+            corners = []
+            for gray in grays:
+                ret, corners = cv.findChessboardCorners(gray, (rows, cols), None)
+                rets.append(ret)
+                corners.append(corners)
+
+            if all(rets):
                 conv_size = (11, 11)
 
-                corners = cv.cornerSubPix(gray, corners, conv_size, (-1, -1), criteria)
-                cv.drawChessboardCorners(frame, (rows, cols), corners, ret)
+                for i, gray in enumerate(grays):
+                    corners[i] = cv.cornerSubPix(
+                        gray, corners[i], conv_size, (-1, -1), criteria
+                    )
+                    cv.drawChessboardCorners(prevs[i], (rows, cols), corners[i], rets[i])
 
-                preview = np.copy(frame)
-                cv.putText(
-                    preview,
-                    'If detected points are poor, press "s" to skip this sample',
-                    (25, 25),
-                    cv.FONT_HERSHEY_DUPLEX,
-                    1,
-                    (0, 0, 255),
-                    1,
-                )
+                if cooldown <= 0:
+                    cam_imagepoints[cam_idx].append(corners)
+                    cam_objpoints[cam_idx].append(objp)
 
-                # TODO: Uncomment later
-                # cv.imshow("Preview", preview)
-                # k = cv.waitKey(0)
-                # if k & 0xFF == ord("s"):
-                #     print(f"skipping cam{i}_{j}.png")
-                #     continue
+            prev = np.hstack((prev[0], prev[1]))
 
-                objpoints.append(objp)
-                imgpoints.append(corners)
+        cv.imshow("Preview", prev)
+        if cv.waitKey(0) & 0xFF == 27:
+            break
 
-        cv.destroyAllWindows()
+    cv.destroyAllWindows()
+    for i, cam_id in enumerate(cam_ids):
         rmse, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
-            objpoints, imgpoints, (width, height), None, None
+            cam_objpoints[i], cam_imgpoints[i], (width, height), None, None
         )
 
         print(f"cam{cam_id}:")
@@ -160,7 +221,7 @@ def intrinsic():
 
         save_camera_intrinsic(cam_id, mtx, dist)
 
-        return mtx, dist
+    return mtx, dist
 
 
 def stereo_calibrate():
@@ -280,10 +341,10 @@ def parse_settings(filename):
 
 
 def save_camera_intrinsic(cam_id, mtx, dist):
-    if not os.path.exists("camera_paremeters"):
+    if not os.path.exists("camera_parameters"):
         os.mkdir("camera_parameters")
 
-    out_filename = os.path.join("camera_paremeters", f"cam{cam_id}_intrinsic.dat")
+    out_filename = os.path.join("camera_parameters", f"cam{cam_id}_intrinsic.dat")
     outf = open(out_filename, "w")
 
     outf.write("intrinsic:\n")

@@ -8,6 +8,7 @@ from mediapipe.tasks.python import vision
 from mediapipe.python import solutions
 from utils import draw_landmarks_on_image
 from osc import handle_osc
+import calibration
 
 
 model_path = "./models/pose_landmarker_lite.task"
@@ -69,7 +70,7 @@ options = PoseLandmarkerOptions(
 
 
 def start():
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture(calibration.settings["cameras"][1])
 
     if not cap.isOpened():
         print("Failed to open capture device")
